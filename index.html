@@ -69,6 +69,37 @@ $('#themeBtn').onclick=()=>{document.documentElement.classList.toggle('dark');lo
 $('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('hidden');
 $('#nav').onclick=e=>{let b=e.target.closest('[data-page]');if(b)navigate(b.dataset.page)};
 document.addEventListener('click', e => {
+  const p = e.target.closest('[data-page]');
+  if (p) navigate(p.dataset.page);
+
+  const a = e.target.closest('[data-action]');
+  if (a) {
+    if (!sb || !user) return toast('اتصل بـ Supabase وسجّل الدخول أولاً');
+    if (a.dataset.action === 'add-customer') customerForm();
+    if (a.dataset.action === 'add-visit') visitForm();
+    if (a.dataset.action === 'add-sale') saleForm();
+  }
+
+  const ed = e.target.closest('[data-edit]');
+  if (ed) {
+    const c = customers.find(x => x.id === ed.dataset.edit);
+    if (c) customerForm(c);
+  }
+
+  const vw = e.target.closest('[data-view]');
+  if (vw) {
+    const c = customers.find(x => x.id === vw.dataset.view);
+    if (c) {
+      const details = '<div class="space-y-2 text-sm">' +
+        Object.entries(c)
+          .filter(([k, v]) => v && ['name','type','area','address','phone','contact_name','contact_phone','whatsapp','current_supplier','status','importance','next_step','next_follow_up','notes'].includes(k))
+          .map(([k, v]) => '<div class="flex justify-between border-b py-2"><b>' + k + '</b><span>' + esc(v) + '</span></div>')
+          .join('') +
+        '</div>';
+      showModal('تفاصيل العميل', details);
+    }
+  }
+});
   let p = e.target.closest('[data-page]');
   if (p) navigate(p.dataset.page);
 
