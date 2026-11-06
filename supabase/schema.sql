@@ -111,3 +111,56 @@ do $$ declare t text; begin
  end loop;
 end $$;
 -- Share tables deliberately have no client policies. Only trusted Edge Functions using service role may access them.
+
+-- Enforce parent ownership on child records, not just user_id supplied by the client.
+drop policy if exists tenant_insert on public.customer_contacts;
+create policy tenant_insert on public.customer_contacts for insert with check (
+ user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid())
+);
+drop policy if exists tenant_update on public.customer_contacts;
+create policy tenant_update on public.customer_contacts for update using(user_id=auth.uid())
+ with check(user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid()));
+
+drop policy if exists tenant_insert on public.visits;
+create policy tenant_insert on public.visits for insert with check (
+ user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid())
+);
+drop policy if exists tenant_update on public.visits;
+create policy tenant_update on public.visits for update using(user_id=auth.uid())
+ with check(user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid()));
+
+drop policy if exists tenant_insert on public.sales;
+create policy tenant_insert on public.sales for insert with check (
+ user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid())
+);
+drop policy if exists tenant_update on public.sales;
+create policy tenant_update on public.sales for update using(user_id=auth.uid())
+ with check(user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid()));
+
+drop policy if exists tenant_insert on public.sale_items;
+create policy tenant_insert on public.sale_items for insert with check (
+ user_id=auth.uid() and exists(select 1 from public.sales s where s.id=sale_id and s.user_id=auth.uid())
+ and (product_id is null or exists(select 1 from public.products p where p.id=product_id and p.user_id=auth.uid()))
+);
+drop policy if exists tenant_update on public.sale_items;
+create policy tenant_update on public.sale_items for update using(user_id=auth.uid())
+ with check(user_id=auth.uid() and exists(select 1 from public.sales s where s.id=sale_id and s.user_id=auth.uid())
+ and (product_id is null or exists(select 1 from public.products p where p.id=product_id and p.user_id=auth.uid())));
+
+drop policy if exists tenant_insert on public.follow_ups;
+create policy tenant_insert on public.follow_ups for insert with check (
+ user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid())
+);
+drop policy if exists tenant_update on public.follow_ups;
+create policy tenant_update on public.follow_ups for update using(user_id=auth.uid())
+ with check(user_id=auth.uid() and exists(select 1 from public.customers c where c.id=customer_id and c.user_id=auth.uid()));
+
+-- Automatically create a private profile for each new authenticated account.
+create or replace function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path=public as $$
+begin
+ insert into public.profiles(id,full_name) values(new.id,coalesce(new.raw_user_meta_data->>'full_name',''));
+ return new;
+end $$;
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
