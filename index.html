@@ -68,8 +68,39 @@ $('#saveTarget').onclick=()=>{target=Math.max(1,Number($('#targetInput').value||
 $('#themeBtn').onclick=()=>{document.documentElement.classList.toggle('dark');localStorage.setItem('speedcrm_dark',document.documentElement.classList.contains('dark')?'1':'0')};
 $('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('hidden');
 $('#nav').onclick=e=>{let b=e.target.closest('[data-page]');if(b)navigate(b.dataset.page)};
-document.addEventListener('click',e=>{let p=e.target.closest('[data-page]');if(p)navigate(p.dataset.page);let a=e.target.closest('[data-action]');if(a){if(!sb||!user)return toast('اتصل بـ Supabase وسجّل الدخول أولاً');if(a.dataset.action==='add-customer')customerForm();if(a.dataset.action==='add-visit')visitForm();if(a.dataset.action==='add-sale')saleForm()}let ed=e.target.closest('[data-edit]');if(ed){let c=customers.find(x=>x.id===ed.dataset.edit);customerForm(c)}let vw=e.target.closest('[data-view]');if(vw){let c=customers.find(x=>x.id===vw.dataset.view);showModal('تفاصيل العميل','<div class="space-y-2 text-sm">'+Object.entries(c).filter(([k,v])=>v&&['name','type','area','address','phone','contact_name','contact_phone','whatsapp','current_supplier','status','importance','next_step','next_follow_up','notes'].includes(k)).map(([k,v])=>'<div class="flex justify-between border-b py-2"><b>'+k+'</b><span>'+esc(v)+'</span></div>').join('')+'</div>');}});
-['customerSearch','filterType','filterStatus'].forEach(id=>$('#'+id).addEventListener('input',()=>{page=1;renderCustomers()}));$('#prevPage').onclick=()=>{page=Math.max(1,page-1);renderCustomers()};$('#nextPage').onclick=()=>{page++;renderCustomers()};
+document.addEventListener('click', e => {
+  let p = e.target.closest('[data-page]');
+  if (p) navigate(p.dataset.page);
+
+  let a = e.target.closest('[data-action]');
+  if (a) {
+    if (!sb || !user) return toast('اتصل بـ Supabase وسجّل الدخول أولاً');
+    if (a.dataset.action === 'add-customer') customerForm();
+    if (a.dataset.action === 'add-visit') visitForm();
+    if (a.dataset.action === 'add-sale') saleForm();
+  }
+
+  let ed = e.target.closest('[data-edit]');
+  if (ed) {
+    let c = customers.find(x => x.id === ed.dataset.edit);
+    customerForm(c);
+  }
+
+  let vw = e.target.closest('[data-view]');
+  if (vw) {
+    let c = customers.find(x => x.id === vw.dataset.view);
+    showModal(
+      'تفاصيل العميل',
+      '<div class="space-y-2 text-sm">' +
+      Object.entries(c)
+        .filter(([k, v]) => v && ['name','type','area','address','phone','contact_name','contact_phone','whatsapp','current_supplier','status','importance','next_step','next_follow_up','notes'].includes(k))
+        .map(([k, v]) => '<div class="flex justify-between border-b py-2"><b>' + k + '</b><span>' + esc(v) + '</span></div>')
+        .join('') +
+      '</div>'
+    );
+  }
+});
+  ['customerSearch','filterType','filterStatus'].forEach(id=>$('#'+id).addEventListener('input',()=>{page=1;renderCustomers()}));$('#prevPage').onclick=()=>{page=Math.max(1,page-1);renderCustomers()};$('#nextPage').onclick=()=>{page++;renderCustomers()};
 $('#createShare').onclick=async()=>{if(!sb||!user)return toast('سجّل الدخول أولاً');const type=$('#shareType').value,area=$('#shareArea').value.trim(),expiry=$('#shareExpiry').value;const {data,error}=await sb.functions.invoke('share-report',{body:{action:'create',data_type:type,filters:area?{area}:{},expires_at:expiry?new Date(expiry+'T23:59:59').toISOString():null,require_auth:$('#shareAuth').value==='true'}});if(error||!data?.token)return toast(error?.message||data?.error||'تعذر إنشاء الرابط');const link=location.origin+location.pathname+'?share='+encodeURIComponent(data.token);$('#shareResult').innerHTML='<div class="break-all p-3 rounded-lg bg-slate-100 dark:bg-slate-800">'+esc(link)+'</div><div class="flex gap-2 mt-2"><button id="copyShare" class="btn muted">نسخ الرابط</button><a class="btn primary" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent('تقرير Speed Medical CRM: '+link)+'">إرسال عبر واتساب</a></div>';$('#copyShare').onclick=()=>navigator.clipboard.writeText(link).then(()=>toast('تم نسخ الرابط')).catch(()=>toast('تعذر النسخ'));}
 const shareToken=new URLSearchParams(location.search).get('share');if(shareToken){document.querySelector('main').innerHTML='<section class="panel p-6"><h1 class="text-xl font-extrabold mb-2">تقرير Speed Medical المشترك</h1><div id="sharedContent" class="text-sm text-slate-400">جارٍ التحقق من صلاحية الرابط...</div></section>';const savedUrl=localStorage.getItem('speedcrm_url')||window.SPEEDCRM_CONFIG?.supabaseUrl,savedKey=localStorage.getItem('speedcrm_key')||window.SPEEDCRM_CONFIG?.supabaseAnonKey;if(savedUrl&&savedKey){const client=window.supabase.createClient(savedUrl,savedKey);client.functions.invoke('share-report',{body:{action:'view',token:shareToken}}).then(({data,error})=>{const el=$('#sharedContent');if(error||!data?.data){el.textContent='الرابط غير صالح أو منتهي أو يتطلب تسجيل الدخول.';return}const rows=data.data;el.innerHTML='<p class="mb-3">عرض للقراءة فقط · '+rows.length+' سجل</p><div class="overflow-auto"><table class="w-full text-right"><thead><tr>'+data.fields.map(x=>'<th class="p-2">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+data.fields.map(x=>'<td class="p-2 border-t">'+esc(row[x]??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'})}else $('#sharedContent').textContent='يجب إعداد اتصال قاعدة البيانات على هذا الجهاز لعرض التقرير.'}const url=localStorage.getItem('speedcrm_url')||window.SPEEDCRM_CONFIG?.supabaseUrl,key=localStorage.getItem('speedcrm_key')||window.SPEEDCRM_CONFIG?.supabaseAnonKey;target=Number(localStorage.getItem('speedcrm_target')||40000);$('#targetInput').value=target;if(localStorage.getItem('speedcrm_dark')==='1')document.documentElement.classList.add('dark');renderSchedule();setStats();if(url&&key){$('#sbUrl').value=url;$('#sbKey').value=key;connect(url,key)}icons();
 </script></body></html>
