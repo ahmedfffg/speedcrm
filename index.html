@@ -1,76 +1,1313 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
+<!Doctype html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#071b2b"><title>Speed Medical CRM</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0E7C86">
+<title>Speed Medical CRM — نظام إدارة المبيعات الميدانية</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{50:'#eaf5fb',100:'#cde8f7',500:'#1595d2',600:'#087db8',700:'#08618e',900:'#07314b'},ink:'#071b2b'}}}}</script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50: '#e6f7f9',
+          100: '#c0ecef',
+          200: '#96dfe4',
+          300: '#6ad2d9',
+          400: '#3ec5cf',
+          500: '#0E7C86', // اللون الأساسي
+          600: '#0b6a73',
+          700: '#085860',
+          800: '#05464d',
+          900: '#02343a',
+        },
+        accent: '#F97316', // برتقالي دافئ للتنبيهات
+        surface: {
+          light: '#f4f7fb',
+          dark: '#0a1a24',
+        }
+      },
+      fontFamily: {
+        sans: ['Cairo', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.06)',
+        'glass-lg': '0 16px 48px rgba(0, 0, 0, 0.1)',
+        'soft': '0 2px 12px rgba(0, 0, 0, 0.04)',
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+      },
+    }
+  }
+}
+</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
-:root{font-family:'Cairo',sans-serif}body{background:#f4f7fb;color:#132b3d}.dark body{background:#081925;color:#e5edf4}.nav-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;color:#6b7f8e;font-weight:600;width:100%;text-align:right}.nav-item:hover,.nav-item.active{background:#e8f4fb;color:#087db8}.dark .nav-item:hover,.dark .nav-item.active{background:#12364b;color:#5bc0f4}.panel{background:white;border:1px solid #e7edf2;border-radius:17px}.dark .panel{background:#102635;border-color:#203c4d}.field{width:100%;border:1px solid #dce5eb;border-radius:10px;padding:10px 12px;background:transparent;outline:none}.field:focus{border-color:#1595d2;box-shadow:0 0 0 3px #1595d21c}.dark .field{border-color:#315064;color:#e5edf4}.btn{border-radius:10px;padding:9px 14px;font-weight:700;display:inline-flex;align-items:center;gap:8px;justify-content:center}.primary{background:#087db8;color:white}.muted{background:#edf3f7;color:#476174}.dark .muted{background:#1b394b;color:#d6e7f1}.stat{font-size:25px;font-weight:800;letter-spacing:-.5px}.table-wrap{overflow:auto}th{font-size:12px;color:#718494;font-weight:700;text-align:right;padding:13px 14px;white-space:nowrap}td{padding:13px 14px;border-top:1px solid #edf1f4;white-space:nowrap}.dark td{border-color:#233d4d}.pill{font-size:11px;border-radius:30px;padding:4px 9px;background:#eaf5fb;color:#087db8;font-weight:700}.hidden-view{display:none!important}.overlay{position:fixed;inset:0;background:#071b2b80;z-index:50;display:grid;place-items:center;padding:16px}.modal{width:min(760px,100%);max-height:90vh;overflow:auto}.toast{position:fixed;bottom:20px;left:20px;z-index:80;padding:12px 18px;border-radius:12px;background:#102c3d;color:white;box-shadow:0 8px 35px #0002}
-</style></head>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  font-family: 'Cairo', sans-serif;
+  --bg-light: #f4f7fb;
+  --bg-dark: #0a1a24;
+  --glass-light: rgba(255, 255, 255, 0.72);
+  --glass-dark: rgba(16, 38, 53, 0.65);
+  --border-light: rgba(255, 255, 255, 0.5);
+  --border-dark: rgba(255, 255, 255, 0.08);
+}
+
+* { font-feature-settings: 'ss01' on, 'ss02' on; }
+
+body {
+  background: var(--bg-light);
+  color: #132b3d;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 10% 20%, rgba(14, 124, 134, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(249, 115, 22, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(62, 197, 207, 0.03) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+.dark body {
+  background: var(--bg-dark);
+  color: #e5edf4;
+  background-image:
+    radial-gradient(ellipse at 10% 20%, rgba(14, 124, 134, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(249, 115, 22, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(62, 197, 207, 0.05) 0%, transparent 60%);
+}
+
+/* ===== Glass Panels ===== */
+.panel {
+  background: var(--glass-light);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--border-light);
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.dark .panel {
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.panel:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Sidebar Nav ===== */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  color: #5f7382;
+  font-weight: 600;
+  font-size: 0.875rem;
+  width: 100%;
+  text-align: right;
+  transition: all 0.2s ease;
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  background: rgba(14, 124, 134, 0.08);
+  color: #0E7C86;
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(14, 124, 134, 0.12), rgba(62, 197, 207, 0.08));
+  color: #0E7C86;
+  font-weight: 700;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #0E7C86;
+  border-radius: 0 4px 4px 0;
+}
+
+.dark .nav-item {
+  color: #8ba4b5;
+}
+
+.dark .nav-item:hover {
+  background: rgba(14, 124, 134, 0.15);
+  color: #5bc0f4;
+}
+
+.dark .nav-item.active {
+  background: linear-gradient(135deg, rgba(14, 124, 134, 0.25), rgba(62, 197, 207, 0.1));
+  color: #5bc0f4;
+}
+
+.dark .nav-item.active::before {
+  background: #5bc0f4;
+}
+
+/* ===== Form Fields ===== */
+.field {
+  width: 100%;
+  border: 1.5px solid #dce5eb;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.6);
+  outline: none;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.field:focus {
+  border-color: #0E7C86;
+  box-shadow: 0 0 0 4px rgba(14, 124, 134, 0.12);
+  background: white;
+}
+
+.dark .field {
+  border-color: #2a4a5e;
+  background: rgba(16, 38, 53, 0.6);
+  color: #e5edf4;
+}
+
+.dark .field:focus {
+  border-color: #3ec5cf;
+  box-shadow: 0 0 0 4px rgba(62, 197, 207, 0.15);
+  background: rgba(16, 38, 53, 0.9);
+}
+
+/* ===== Buttons ===== */
+.btn {
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #0E7C86, #0b6a73);
+  color: white;
+  box-shadow: 0 2px 8px rgba(14, 124, 134, 0.25);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 16px rgba(14, 124, 134, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-muted {
+  background: rgba(237, 243, 247, 0.7);
+  color: #476174;
+}
+
+.btn-muted:hover {
+  background: rgba(237, 243, 247, 1);
+}
+
+.dark .btn-muted {
+  background: rgba(27, 57, 75, 0.7);
+  color: #d6e7f1;
+}
+
+.dark .btn-muted:hover {
+  background: rgba(27, 57, 75, 1);
+}
+
+/* ===== Stat Cards ===== */
+.stat-card {
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  background: var(--glass-light);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-light);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .stat-card {
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+/* ===== Tables ===== */
+.table-wrap {
+  overflow: auto;
+  border-radius: 1.25rem;
+}
+
+table { border-collapse: separate; border-spacing: 0; width: 100%; }
+
+th {
+  font-size: 11px;
+  color: #6b8292;
+  font-weight: 700;
+  text-align: right;
+  padding: 14px 16px;
+  white-space: nowrap;
+  background: rgba(244, 247, 251, 0.8);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(220, 229, 235, 0.6);
+}
+
+.dark th {
+  background: rgba(10, 26, 36, 0.9);
+  color: #8ba4b5;
+  border-color: rgba(42, 74, 94, 0.5);
+}
+
+td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(237, 241, 244, 0.8);
+  white-space: nowrap;
+  font-size: 0.875rem;
+  transition: background 0.15s ease;
+}
+
+.dark td {
+  border-color: rgba(35, 61, 77, 0.5);
+}
+
+tbody tr:hover td {
+  background: rgba(14, 124, 134, 0.03);
+}
+
+.dark tbody tr:hover td {
+  background: rgba(14, 124, 134, 0.06);
+}
+
+tbody tr:nth-child(even) td {
+  background: rgba(248, 250, 252, 0.4);
+}
+
+.dark tbody tr:nth-child(even) td {
+  background: rgba(16, 38, 53, 0.3);
+}
+
+/* ===== Pills ===== */
+.pill {
+  font-size: 11px;
+  border-radius: 30px;
+  padding: 4px 10px;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.pill-teal {
+  background: rgba(14, 124, 134, 0.1);
+  color: #0E7C86;
+}
+
+.pill-orange {
+  background: rgba(249, 115, 22, 0.1);
+  color: #ea580c;
+}
+
+.pill-green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.pill-gray {
+  background: rgba(107, 130, 146, 0.1);
+  color: #5f7382;
+}
+
+.dark .pill-teal {
+  background: rgba(14, 124, 134, 0.2);
+  color: #5bc0f4;
+}
+
+.dark .pill-orange {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fdba74;
+}
+
+.dark .pill-green {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+/* ===== Utilities ===== */
+.hidden-view { display: none !important; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 27, 43, 0.5);
+  backdrop-filter: blur(6px);
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  width: min(780px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  animation: slideUp 0.25s ease;
+  border-radius: 1.5rem;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 80;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: rgba(16, 38, 53, 0.92);
+  backdrop-filter: blur(12px);
+  color: white;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  animation: slideIn 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(14, 124, 134, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(14, 124, 134, 0.4); }
+
+/* ===== Skeleton ===== */
+.skeleton {
+  background: linear-gradient(90deg, rgba(220, 229, 235, 0.4) 25%, rgba(220, 229, 235, 0.8) 50%, rgba(220, 229, 235, 0.4) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, rgba(42, 74, 94, 0.3) 25%, rgba(42, 74, 94, 0.6) 50%, rgba(42, 74, 94, 0.3) 75%);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== Progress Bar ===== */
+.progress-track {
+  height: 12px;
+  background: rgba(14, 124, 134, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0E7C86, #3ec5cf);
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ===== Responsive tweaks ===== */
+@media (max-width: 1023px) {
+  .sidebar-collapsed { display: none; }
+}
+
+/* ===== Focus visible for accessibility ===== */
+:focus-visible {
+  outline: 2px solid #0E7C86;
+  outline-offset: 2px;
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
 <body>
 <div id="app" class="min-h-screen">
-<header class="h-16 bg-white dark:bg-[#102635] border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 lg:px-7 sticky top-0 z-30">
-<div class="flex items-center gap-3"><button id="mobileMenu" class="btn muted lg:hidden"><i data-lucide="menu"></i></button><div class="w-9 h-9 rounded-xl bg-brand-600 text-white grid place-items-center font-extrabold">S</div><div><div class="font-extrabold leading-tight">Speed Medical</div><div class="text-[10px] text-slate-400 font-bold tracking-wider">CRM & FIELD SALES</div></div></div>
-<div class="flex items-center gap-2"><span id="connection" class="hidden sm:inline text-xs text-slate-400">غير متصل بقاعدة البيانات</span><button id="themeBtn" class="btn muted" title="تغيير المظهر"><i data-lucide="moon"></i></button><button id="authBtn" class="btn primary"><i data-lucide="log-in"></i><span>تسجيل الدخول</span></button></div></header>
+
+<!-- ===== HEADER ===== -->
+<header class="h-16 bg-white/70 dark:bg-[#102635]/70 backdrop-blur-xl border-b border-white/50 dark:border-white/10 flex items-center justify-between px-4 lg:px-7 sticky top-0 z-30">
+  <div class="flex items-center gap-3">
+    <button id="mobileMenu" class="btn btn-muted lg:hidden p-2" aria-label="القائمة">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+    <button id="sidebarToggle" class="btn btn-muted hidden lg:flex p-2" aria-label="طي القائمة">
+      <i data-lucide="panel-right-close" class="w-5 h-5"></i>
+    </button>
+    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white grid place-items-center font-extrabold shadow-lg shadow-brand-500/20 text-sm">S</div>
+    <div>
+      <div class="font-extrabold leading-tight text-[15px]">Speed Medical</div>
+      <div class="text-[10px] text-slate-400 font-bold tracking-wider">CRM & FIELD SALES</div>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <span id="connection" class="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-400 bg-slate-100/50 dark:bg-slate-800/50 px-3 py-1.5 rounded-full">
+      <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+      غير متصل
+    </span>
+    <button id="themeBtn" class="btn btn-muted p-2.5" title="تغيير المظهر" aria-label="تبديل الوضع الداكن">
+      <i data-lucide="moon" class="w-4 h-4"></i>
+    </button>
+    <button id="authBtn" class="btn btn-primary text-xs">
+      <i data-lucide="log-in" class="w-4 h-4"></i>
+      <span>تسجيل الدخول</span>
+    </button>
+  </div>
+</header>
+
 <div class="flex max-w-[1600px] mx-auto">
-<aside id="sidebar" class="w-64 shrink-0 p-4 hidden lg:block min-h-[calc(100vh-64px)]"><div class="text-[10px] font-bold text-slate-400 px-3 py-3">القائمة الرئيسية</div><nav id="nav" class="space-y-1">
-<button class="nav-item active" data-page="dashboard"><i data-lucide="layout-dashboard"></i>لوحة التحكم</button>
-<button class="nav-item" data-page="customers"><i data-lucide="building-2"></i>العملاء</button>
-<button class="nav-item" data-page="visits"><i data-lucide="map-pin"></i>الزيارات الميدانية</button>
-<button class="nav-item" data-page="sales"><i data-lucide="shopping-cart"></i>المبيعات والتارجت</button>
-<button class="nav-item" data-page="followups"><i data-lucide="calendar-clock"></i>المتابعات</button>
-<button class="nav-item" data-page="schedule"><i data-lucide="calendar-days"></i>جدول العمل</button>
-<button class="nav-item" data-page="sharing"><i data-lucide="share-2"></i>مشاركة التقارير</button>
-<button class="nav-item" data-page="settings"><i data-lucide="settings"></i>الإعدادات</button></nav>
-<div class="panel p-3 mt-8"><div class="flex items-center gap-2 text-brand-600 font-bold text-sm"><i data-lucide="shield-check"></i>بياناتك محمية</div><p class="text-xs text-slate-400 mt-2 leading-6">يتطلب النظام إعداد Supabase وتسجيل الدخول قبل حفظ بيانات العمل.</p></div></aside>
-<main class="flex-1 min-w-0 p-4 lg:p-7">
-<section id="page-dashboard" class="page space-y-6"><div class="flex flex-wrap items-center justify-between gap-3"><div><div class="text-sm text-slate-400">نظرة عامة</div><h1 class="text-2xl font-extrabold">لوحة التحكم</h1><p class="text-sm text-slate-400 mt-1">ملخص أداء المبيعات والزيارات الميدانية</p></div><button class="btn primary" data-action="add-customer"><i data-lucide="plus"></i>إضافة عميل</button></div>
-<div id="stats" class="grid grid-cols-2 xl:grid-cols-4 gap-3"><div class="panel p-4"><div class="text-xs text-slate-400">إجمالي العملاء</div><div class="stat mt-2">—</div></div><div class="panel p-4"><div class="text-xs text-slate-400">الزيارات المنفذة</div><div class="stat mt-2">—</div></div><div class="panel p-4"><div class="text-xs text-slate-400">عملاء مهتمون</div><div class="stat mt-2">—</div></div><div class="panel p-4"><div class="text-xs text-slate-400">مواعيد المتابعة</div><div class="stat mt-2">—</div></div></div>
-<div class="grid xl:grid-cols-3 gap-4"><div class="panel p-5 xl:col-span-2"><div class="flex justify-between items-center"><div><h2 class="font-bold">تحقيق التارجت الشهري</h2><p class="text-xs text-slate-400 mt-1">التارجت الافتراضي 40,000 جنيه</p></div><span class="pill" id="targetPercent">0%</span></div><div class="flex justify-between mt-6 text-sm"><span class="font-bold" id="salesTotal">0 ج.م</span><span class="text-slate-400" id="targetLabel">من 40,000 ج.م</span></div><div class="h-3 bg-slate-100 dark:bg-slate-700 rounded-full mt-3 overflow-hidden"><div id="targetBar" class="h-full bg-brand-500 rounded-full" style="width:0%"></div></div><div class="text-xs text-slate-400 mt-3" id="remaining">المتبقي: 40,000 ج.م</div></div><div class="panel p-5"><h2 class="font-bold">اختصارات سريعة</h2><div class="grid grid-cols-2 gap-2 mt-4"><button class="btn muted text-xs" data-action="add-visit"><i data-lucide="map-pin"></i>تسجيل زيارة</button><button class="btn muted text-xs" data-action="add-sale"><i data-lucide="plus"></i>تسجيل بيع</button><button class="btn muted text-xs" data-page="followups"><i data-lucide="clock"></i>المتابعات</button><button class="btn muted text-xs" data-page="sharing"><i data-lucide="share"></i>مشاركة</button></div></div></div>
-<div class="grid xl:grid-cols-2 gap-4"><div class="panel p-5"><h2 class="font-bold">أحدث العملاء</h2><div id="recentCustomers" class="text-sm text-slate-400 py-8 text-center">سجّل الدخول لعرض بياناتك.</div></div><div class="panel p-5"><h2 class="font-bold">المتابعات القادمة</h2><div id="upcoming" class="text-sm text-slate-400 py-8 text-center">لا توجد بيانات معروضة.</div></div></div></section>
-<section id="page-customers" class="page hidden-view space-y-5"><div class="flex flex-wrap justify-between gap-3"><div><h1 class="text-2xl font-extrabold">العملاء</h1><p class="text-sm text-slate-400">إدارة المنشآت الطبية ومسؤولي المشتريات</p></div><button class="btn primary" data-action="add-customer"><i data-lucide="plus"></i>عميل جديد</button></div><div class="panel p-4 flex flex-wrap gap-2"><input id="customerSearch" class="field flex-1 min-w-48" placeholder="ابحث بالاسم أو الهاتف"><select id="filterType" class="field w-auto"><option value="">كل أنواع المنشآت</option><option>معمل تحاليل طبية</option><option>عيادة</option><option>مركز طبي</option><option>مستشفى</option><option>مركز أشعة</option><option>منشأة طبية أخرى</option></select><select id="filterStatus" class="field w-auto"><option value="">كل الحالات</option><option>عميل جديد</option><option>تمت زيارته</option><option>تم التواصل مع مسؤول المشتريات</option><option>مهتم</option><option>بانتظار عرض سعر</option><option>في مرحلة التفاوض</option><option>عميل متعاقد</option><option>غير مهتم حاليًا</option></select></div><div class="panel table-wrap"><table class="w-full text-sm"><thead><tr><th>اسم المنشأة</th><th>النوع</th><th>المنطقة</th><th>الهاتف</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="customerRows"><tr><td colspan="6" class="text-center text-slate-400 py-10">سجّل الدخول لعرض العملاء.</td></tr></tbody></table></div><div class="flex justify-between text-xs text-slate-400"><span id="customerCount">0 عميل</span><div class="flex gap-2"><button class="btn muted" id="prevPage">السابق</button><span id="pageNumber" class="self-center">1</span><button class="btn muted" id="nextPage">التالي</button></div></div></section>
-<section id="page-visits" class="page hidden-view space-y-5"><div class="flex justify-between items-center"><div><h1 class="text-2xl font-extrabold">الزيارات الميدانية</h1><p class="text-sm text-slate-400">سجل تحركاتك ونتائج مقابلات العملاء</p></div><button class="btn primary" data-action="add-visit"><i data-lucide="plus"></i>تسجيل زيارة</button></div><div class="panel table-wrap"><table class="w-full text-sm"><thead><tr><th>العميل</th><th>التاريخ والوقت</th><th>الشخص المقابل</th><th>النتيجة</th><th>عرض السعر</th><th>الطلب</th></tr></thead><tbody id="visitRows"><tr><td colspan="6" class="text-center text-slate-400 py-10">لا توجد زيارات محملة.</td></tr></tbody></table></div></section>
-<section id="page-sales" class="page hidden-view space-y-5"><div class="flex justify-between items-center"><div><h1 class="text-2xl font-extrabold">المبيعات والتارجت</h1><p class="text-sm text-slate-400">متابعة الطلبات والإيرادات</p></div><button class="btn primary" data-action="add-sale"><i data-lucide="plus"></i>تسجيل عملية بيع</button></div><div class="grid grid-cols-2 xl:grid-cols-3 gap-3"><div class="panel p-4"><div class="text-xs text-slate-400">مبيعات الشهر</div><div id="monthSales" class="stat mt-2">0 ج.م</div></div><div class="panel p-4"><div class="text-xs text-slate-400">التارجت</div><div id="monthTarget" class="stat mt-2">40,000</div></div><div class="panel p-4 col-span-2 xl:col-span-1"><div class="text-xs text-slate-400">المتبقي</div><div id="monthRemaining" class="stat mt-2">40,000</div></div></div><div class="panel table-wrap"><table class="w-full text-sm"><thead><tr><th>العميل</th><th>التاريخ</th><th>قيمة البيع</th><th>حالة الطلب</th><th>رقم الفاتورة</th></tr></thead><tbody id="saleRows"><tr><td colspan="5" class="text-center text-slate-400 py-10">لا توجد مبيعات محملة.</td></tr></tbody></table></div></section>
-<section id="page-followups" class="page hidden-view space-y-5"><div><h1 class="text-2xl font-extrabold">المتابعات والتنبيهات</h1><p class="text-sm text-slate-400">المواعيد القادمة والصفقات التي تحتاج إلى اهتمام</p></div><div class="panel table-wrap"><table class="w-full text-sm"><thead><tr><th>العميل</th><th>موعد المتابعة</th><th>الخطوة القادمة</th><th>الحالة</th></tr></thead><tbody id="followRows"><tr><td colspan="4" class="text-center text-slate-400 py-10">لا توجد متابعات محملة.</td></tr></tbody></table></div></section>
-<section id="page-schedule" class="page hidden-view space-y-5"><div><h1 class="text-2xl font-extrabold">جدول العمل الأسبوعي</h1><p class="text-sm text-slate-400">المواعيد الافتراضية من 4 مساءً إلى 9 مساءً</p></div><div id="scheduleGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div></section>
-<section id="page-sharing" class="page hidden-view space-y-5"><div><h1 class="text-2xl font-extrabold">مشاركة التقارير</h1><p class="text-sm text-slate-400">إنشاء روابط عرض محدودة الصلاحية لإرسالها عبر واتساب</p></div><div class="panel p-5 max-w-3xl"><div class="font-bold mb-3">إنشاء مشاركة جديدة</div><div class="grid sm:grid-cols-2 gap-3"><label class="text-sm">نوع البيانات<select id="shareType" class="field mt-1"><option value="customers">جميع العملاء</option><option value="visits">تقرير الزيارات</option><option value="sales">تقرير المبيعات</option></select></label><label class="text-sm">المنطقة (اختياري)<input id="shareArea" class="field mt-1" placeholder="مثال: الحي الحادي عشر"></label><label class="text-sm">تاريخ انتهاء الرابط<input id="shareExpiry" type="date" class="field mt-1"></label><label class="text-sm">يتطلب تسجيل الدخول<select id="shareAuth" class="field mt-1"><option value="false">لا</option><option value="true">نعم</option></select></label></div><p class="text-xs text-slate-400 mt-3">سيتم تفعيل إنشاء الروابط بعد نشر وظيفة المشاركة الآمنة وإعداد مفاتيح Supabase.</p><button id="createShare" class="btn primary mt-4"><i data-lucide="link"></i>إنشاء رابط مشاركة</button><div id="shareResult" class="mt-3 text-sm"></div></div><div class="panel p-5"><h2 class="font-bold">الروابط المنشأة</h2><p class="text-sm text-slate-400 mt-2">ستظهر روابط المشاركة النشطة هنا بعد تفعيل Backend.</p></div></section>
-<section id="page-settings" class="page hidden-view space-y-5"><div><h1 class="text-2xl font-extrabold">الإعدادات</h1><p class="text-sm text-slate-400">تهيئة الاتصال والتارجت وتفضيلات النظام</p></div><div class="panel p-5 max-w-2xl space-y-4"><div class="font-bold">اتصال Supabase</div><label class="block text-sm">Project URL<input id="sbUrl" class="field mt-1" placeholder="https://your-project.supabase.co"></label><label class="block text-sm">Publishable / Anon Key<input id="sbKey" class="field mt-1" placeholder="sb_publishable_... أو anon key"></label><p class="text-xs text-slate-400">هذه المفاتيح العامة فقط. لا تضع Service Role Key في المتصفح مطلقًا.</p><button id="saveConfig" class="btn primary">حفظ الاتصال والاتصال</button><hr class="border-slate-200 dark:border-slate-700"><label class="block text-sm">التارجت الشهري (جنيه)<input id="targetInput" type="number" min="1" value="40000" class="field mt-1"></label><button id="saveTarget" class="btn muted">حفظ التارجت</button></div></section>
-</main></div></div><div id="modalRoot"></div><div id="toastRoot"></div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="sidebar" class="w-64 shrink-0 p-4 hidden lg:block min-h-[calc(100vh-64px)] transition-all duration-300">
+    <div class="text-[10px] font-bold text-slate-400 px-3 py-3 tracking-wider">القائمة الرئيسية</div>
+    <nav id="nav" class="space-y-1">
+      <button class="nav-item active" data-page="dashboard"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i>لوحة التحكم</button>
+      <button class="nav-item" data-page="customers"><i data-lucide="building-2" class="w-[18px] h-[18px]"></i>العملاء</button>
+      <button class="nav-item" data-page="visits"><i data-lucide="map-pin" class="w-[18px] h-[18px]"></i>الزيارات الميدانية</button>
+      <button class="nav-item" data-page="sales"><i data-lucide="shopping-cart" class="w-[18px] h-[18px]"></i>المبيعات والتارجت</button>
+      <button class="nav-item" data-page="followups"><i data-lucide="calendar-clock" class="w-[18px] h-[18px]"></i>المتابعات</button>
+      <button class="nav-item" data-page="schedule"><i data-lucide="calendar-days" class="w-[18px] h-[18px]"></i>جدول العمل</button>
+      <button class="nav-item" data-page="sharing"><i data-lucide="share-2" class="w-[18px] h-[18px]"></i>مشاركة التقارير</button>
+      <button class="nav-item" data-page="settings"><i data-lucide="settings" class="w-[18px] h-[18px]"></i>الإعدادات</button>
+    </nav>
+    <div class="panel p-4 mt-8">
+      <div class="flex items-center gap-2 text-brand-600 font-bold text-sm">
+        <i data-lucide="shield-check" class="w-4 h-4"></i>
+        بياناتك محمية
+      </div>
+      <p class="text-xs text-slate-400 mt-2 leading-6">يتطلب النظام إعداد Supabase وتسجيل الدخول قبل حفظ بيانات العمل.</p>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="flex-1 min-w-0 p-4 lg:p-7">
+
+    <!-- ===== DASHBOARD ===== -->
+    <section id="page-dashboard" class="page space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div class="text-xs text-slate-400 font-semibold tracking-wide">نظرة عامة</div>
+          <h1 class="text-2xl font-extrabold mt-0.5">لوحة التحكم</h1>
+          <p class="text-sm text-slate-400 mt-1">ملخص أداء المبيعات والزيارات الميدانية</p>
+        </div>
+        <button class="btn btn-primary" data-action="add-customer"><i data-lucide="plus" class="w-4 h-4"></i>إضافة عميل</button>
+      </div>
+
+      <!-- Stat cards -->
+      <div id="stats" class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/15 to-brand-500/5 grid place-items-center">
+              <i data-lucide="users" class="w-5 h-5 text-brand-500"></i>
+            </div>
+          </div>
+          <div class="stat-value mt-3">—</div>
+          <div class="text-xs text-slate-400 mt-1">إجمالي العملاء</div>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-500/5 grid place-items-center">
+              <i data-lucide="map-pin" class="w-5 h-5 text-blue-500"></i>
+            </div>
+          </div>
+          <div class="stat-value mt-3">—</div>
+          <div class="text-xs text-slate-400 mt-1">الزيارات المنفذة</div>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/15 to-orange-500/5 grid place-items-center">
+              <i data-lucide="heart" class="w-5 h-5 text-orange-500"></i>
+            </div>
+          </div>
+          <div class="stat-value mt-3">—</div>
+          <div class="text-xs text-slate-400 mt-1">عملاء مهتمون</div>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/15 to-purple-500/5 grid place-items-center">
+              <i data-lucide="calendar-clock" class="w-5 h-5 text-purple-500"></i>
+            </div>
+          </div>
+          <div class="stat-value mt-3">—</div>
+          <div class="text-xs text-slate-400 mt-1">مواعيد المتابعة</div>
+        </div>
+      </div>
+
+      <!-- Target + Quick actions -->
+      <div class="grid xl:grid-cols-3 gap-4">
+        <div class="panel p-6 xl:col-span-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="font-bold">تحقيق التارجت الشهري</h2>
+              <p class="text-xs text-slate-400 mt-1">التارجت الافتراضي 40,000 جنيه</p>
+            </div>
+            <span class="pill pill-teal" id="targetPercent">0%</span>
+          </div>
+          <div class="flex justify-between mt-6 text-sm">
+            <span class="font-bold text-lg" id="salesTotal">0 ج.م</span>
+            <span class="text-slate-400" id="targetLabel">من 40,000 ج.م</span>
+          </div>
+          <div class="progress-track mt-3">
+            <div id="targetBar" class="progress-fill" style="width:0%"></div>
+          </div>
+          <div class="text-xs text-slate-400 mt-3" id="remaining">المتبقي: 40,000 ج.م</div>
+        </div>
+        <div class="panel p-6">
+          <h2 class="font-bold">اختصارات سريعة</h2>
+          <div class="grid grid-cols-2 gap-2 mt-4">
+            <button class="btn btn-muted text-xs justify-start" data-action="add-visit"><i data-lucide="map-pin" class="w-4 h-4"></i>تسجيل زيارة</button>
+            <button class="btn btn-muted text-xs justify-start" data-action="add-sale"><i data-lucide="plus" class="w-4 h-4"></i>تسجيل بيع</button>
+            <button class="btn btn-muted text-xs justify-start" data-page="followups"><i data-lucide="clock" class="w-4 h-4"></i>المتابعات</button>
+            <button class="btn btn-muted text-xs justify-start" data-page="sharing"><i data-lucide="share" class="w-4 h-4"></i>مشاركة</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent + Upcoming -->
+      <div class="grid xl:grid-cols-2 gap-4">
+        <div class="panel p-6">
+          <h2 class="font-bold">أحدث العملاء</h2>
+          <div id="recentCustomers" class="text-sm text-slate-400 py-8 text-center">سجّل الدخول لعرض بياناتك.</div>
+        </div>
+        <div class="panel p-6">
+          <h2 class="font-bold">المتابعات القادمة</h2>
+          <div id="upcoming" class="text-sm text-slate-400 py-8 text-center">لا توجد بيانات معروضة.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CUSTOMERS ===== -->
+    <section id="page-customers" class="page hidden-view space-y-5">
+      <div class="flex flex-wrap justify-between gap-3">
+        <div>
+          <h1 class="text-2xl font-extrabold">العملاء</h1>
+          <p class="text-sm text-slate-400">إدارة المنشآت الطبية ومسؤولي المشتريات</p>
+        </div>
+        <button class="btn btn-primary" data-action="add-customer"><i data-lucide="plus" class="w-4 h-4"></i>عميل جديد</button>
+      </div>
+      <div class="panel p-4 flex flex-wrap gap-2">
+        <input id="customerSearch" class="field flex-1 min-w-48" placeholder="ابحث بالاسم أو الهاتف">
+        <select id="filterType" class="field w-auto">
+          <option value="">كل أنواع المنشآت</option>
+          <option>معمل تحاليل طبية</option>
+          <option>عيادة</option>
+          <option>مركز طبي</option>
+          <option>مستشفى</option>
+          <option>مركز أشعة</option>
+          <option>منشأة طبية أخرى</option>
+        </select>
+        <select id="filterStatus" class="field w-auto">
+          <option value="">كل الحالات</option>
+          <option>عميل جديد</option>
+          <option>تمت زيارته</option>
+          <option>تم التواصل مع مسؤول المشتريات</option>
+          <option>مهتم</option>
+          <option>بانتظار عرض سعر</option>
+          <option>في مرحلة التفاوض</option>
+          <option>عميل متعاقد</option>
+          <option>غير مهتم حاليًا</option>
+        </select>
+      </div>
+      <div class="panel table-wrap">
+        <table class="w-full text-sm">
+          <thead>
+            <tr><th>اسم المنشأة</th><th>النوع</th><th>المنطقة</th><th>الهاتف</th><th>الحالة</th><th>إجراءات</th></tr>
+          </thead>
+          <tbody id="customerRows">
+            <tr><td colspan="6" class="text-center text-slate-400 py-10">سجّل الدخول لعرض العملاء.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex justify-between text-xs text-slate-400">
+        <span id="customerCount">0 عميل</span>
+        <div class="flex gap-2">
+          <button class="btn btn-muted text-xs" id="prevPage">السابق</button>
+          <span id="pageNumber" class="self-center font-bold text-slate-600 dark:text-slate-300">1</span>
+          <button class="btn btn-muted text-xs" id="nextPage">التالي</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== VISITS ===== -->
+    <section id="page-visits" class="page hidden-view space-y-5">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-extrabold">الزيارات الميدانية</h1>
+          <p class="text-sm text-slate-400">سجل تحركاتك ونتائج مقابلات العملاء</p>
+        </div>
+        <button class="btn btn-primary" data-action="add-visit"><i data-lucide="plus" class="w-4 h-4"></i>تسجيل زيارة</button>
+      </div>
+      <div class="panel table-wrap">
+        <table class="w-full text-sm">
+          <thead>
+            <tr><th>العميل</th><th>التاريخ والوقت</th><th>الشخص المقابل</th><th>النتيجة</th><th>عرض السعر</th><th>الطلب</th></tr>
+          </thead>
+          <tbody id="visitRows">
+            <tr><td colspan="6" class="text-center text-slate-400 py-10">لا توجد زيارات محملة.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SALES ===== -->
+    <section id="page-sales" class="page hidden-view space-y-5">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-extrabold">المبيعات والتارجت</h1>
+          <p class="text-sm text-slate-400">متابعة الطلبات والإيرادات</p>
+        </div>
+        <button class="btn btn-primary" data-action="add-sale"><i data-lucide="plus" class="w-4 h-4"></i>تسجيل عملية بيع</button>
+      </div>
+      <div class="grid grid-cols-2 xl:grid-cols-3 gap-3">
+        <div class="stat-card">
+          <div class="text-xs text-slate-400">مبيعات الشهر</div>
+          <div id="monthSales" class="stat-value mt-2">0 ج.م</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-xs text-slate-400">التارجت</div>
+          <div id="monthTarget" class="stat-value mt-2">40,000</div>
+        </div>
+        <div class="stat-card col-span-2 xl:col-span-1">
+          <div class="text-xs text-slate-400">المتبقي</div>
+          <div id="monthRemaining" class="stat-value mt-2">40,000</div>
+        </div>
+      </div>
+      <div class="panel table-wrap">
+        <table class="w-full text-sm">
+          <thead>
+            <tr><th>العميل</th><th>التاريخ</th><th>قيمة البيع</th><th>حالة الطلب</th><th>رقم الفاتورة</th></tr>
+          </thead>
+          <tbody id="saleRows">
+            <tr><td colspan="5" class="text-center text-slate-400 py-10">لا توجد مبيعات محملة.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== FOLLOWUPS ===== -->
+    <section id="page-followups" class="page hidden-view space-y-5">
+      <div>
+        <h1 class="text-2xl font-extrabold">المتابعات والتنبيهات</h1>
+        <p class="text-sm text-slate-400">المواعيد القادمة والصفقات التي تحتاج إلى اهتمام</p>
+      </div>
+      <div class="panel table-wrap">
+        <table class="w-full text-sm">
+          <thead>
+            <tr><th>العميل</th><th>موعد المتابعة</th><th>الخطوة القادمة</th><th>الحالة</th></tr>
+          </thead>
+          <tbody id="followRows">
+            <tr><td colspan="4" class="text-center text-slate-400 py-10">لا توجد متابعات محملة.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SCHEDULE ===== -->
+    <section id="page-schedule" class="page hidden-view space-y-5">
+      <div>
+        <h1 class="text-2xl font-extrabold">جدول العمل الأسبوعي</h1>
+        <p class="text-sm text-slate-400">المواعيد الافتراضية من 4 مساءً إلى 9 مساءً</p>
+      </div>
+      <div id="scheduleGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+    </section>
+
+    <!-- ===== SHARING ===== -->
+    <section id="page-sharing" class="page hidden-view space-y-5">
+      <div>
+        <h1 class="text-2xl font-extrabold">مشاركة التقارير</h1>
+        <p class="text-sm text-slate-400">إنشاء روابط عرض محدودة الصلاحية لإرسالها عبر واتساب</p>
+      </div>
+      <div class="panel p-6 max-w-3xl">
+        <div class="font-bold mb-3">إنشاء مشاركة جديدة</div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <label class="text-sm">نوع البيانات
+            <select id="shareType" class="field mt-1">
+              <option value="customers">جميع العملاء</option>
+              <option value="visits">تقرير الزيارات</option>
+              <option value="sales">تقرير المبيعات</option>
+            </select>
+          </label>
+          <label class="text-sm">المنطقة (اختياري)
+            <input id="shareArea" class="field mt-1" placeholder="مثال: الحي الحادي عشر">
+          </label>
+          <label class="text-sm">تاريخ انتهاء الرابط
+            <input id="shareExpiry" type="date" class="field mt-1">
+          </label>
+          <label class="text-sm">يتطلب تسجيل الدخول
+            <select id="shareAuth" class="field mt-1">
+              <option value="false">لا</option>
+              <option value="true">نعم</option>
+            </select>
+          </label>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">سيتم تفعيل إنشاء الروابط بعد نشر وظيفة المشاركة الآمنة وإعداد مفاتيح Supabase.</p>
+        <button id="createShare" class="btn btn-primary mt-4"><i data-lucide="link" class="w-4 h-4"></i>إنشاء رابط مشاركة</button>
+        <div id="shareResult" class="mt-3 text-sm"></div>
+      </div>
+      <div class="panel p-6">
+        <h2 class="font-bold">الروابط المنشأة</h2>
+        <p class="text-sm text-slate-400 mt-2">ستظهر روابط المشاركة النشطة هنا بعد تفعيل Backend.</p>
+      </div>
+    </section>
+
+    <!-- ===== SETTINGS ===== -->
+    <section id="page-settings" class="page hidden-view space-y-5">
+      <div>
+        <h1 class="text-2xl font-extrabold">الإعدادات</h1>
+        <p class="text-sm text-slate-400">تهيئة الاتصال والتارجت وتفضيلات النظام</p>
+      </div>
+      <div class="panel p-6 max-w-2xl space-y-4">
+        <div class="font-bold">اتصال Supabase</div>
+        <label class="block text-sm">Project URL
+          <input id="sbUrl" class="field mt-1" placeholder="https://your-project.supabase.co">
+        </label>
+        <label class="block text-sm">Publishable / Anon Key
+          <input id="sbKey" class="field mt-1" placeholder="sb_publishable_... أو anon key">
+        </label>
+        <p class="text-xs text-slate-400">هذه المفاتيح العامة فقط. لا تضع Service Role Key في المتصفح مطلقًا.</p>
+        <button id="saveConfig" class="btn btn-primary">حفظ الاتصال والاتصال</button>
+        <hr class="border-slate-200/60 dark:border-slate-700/60">
+        <label class="block text-sm">التارجت الشهري (جنيه)
+          <input id="targetInput" type="number" min="1" value="40000" class="field mt-1">
+        </label>
+        <button id="saveTarget" class="btn btn-muted">حفظ التارجت</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
 <script src="./config.js"></script>
 <script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let sb=null,user=null,customers=[],visits=[],sales=[],followups=[],page=1,target=40000;
-const PAGE_SIZE=10,days=[['السبت','الحي 11 و10 و12'],['الأحد','الحي الأول والثاني'],['الاثنين','الحي الثالث والرابع والخامس والمحور الخدمي'],['الثلاثاء','إجازة'],['الأربعاء','الحصري وزمزم مول والحي الثامن ومدخل الحي السابع'],['الخميس','متابعة العملاء والصفقات واستكمال الزيارات'],['الجمعة','إجازة']];
-const money=n=>new Intl.NumberFormat('ar-EG',{maximumFractionDigits:0}).format(Number(n||0))+' ج.م';
-function toast(s){$('#toastRoot').innerHTML='<div class="toast">'+s+'</div>';setTimeout(()=>$('#toastRoot').innerHTML='',3000)}
-function icons(){if(window.lucide)lucide.createIcons()}
-function navigate(p){$$('.page').forEach(x=>x.classList.add('hidden-view'));$('#page-'+p)?.classList.remove('hidden-view');$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===p));$('#sidebar').classList.add('hidden');icons()}
-function renderSchedule(){$('#scheduleGrid').innerHTML=days.map(([d,a])=>'<div class="panel p-4"><div class="font-bold">'+d+'</div><div class="text-sm text-slate-500 mt-2">'+a+'</div><div class="text-xs text-brand-600 mt-3">4:00 م – 9:00 م</div></div>').join('')}
-function setStats(){const m=new Date(),month=sales.filter(x=>{let d=new Date(x.sale_date);return d.getMonth()===m.getMonth()&&d.getFullYear()===m.getFullYear()&&x.status!=='cancelled'}).reduce((a,x)=>a+Number(x.total_amount||0),0),pct=Math.min(100,Math.round(m/target*100));$('#stats').innerHTML=[[customers.length,'إجمالي العملاء','users'],[visits.length,'الزيارات المنفذة','map-pin'],[customers.filter(x=>x.status==='مهتم').length,'عملاء مهتمون','heart'],[followups.filter(x=>!x.completed).length,'متابعات مفتوحة','calendar-clock']].map(([v,l,i])=>'<div class="panel p-4"><div class="flex justify-between text-xs text-slate-400"><span>'+l+'</span><i data-lucide="'+i+'"></i></div><div class="stat mt-2">'+v+'</div></div>').join('');$('#salesTotal').textContent=money(month);$('#targetLabel').textContent='من '+money(target);$('#targetPercent').textContent=pct+'%';$('#targetBar').style.width=pct+'%';$('#remaining').textContent='المتبقي: '+money(Math.max(0,target-month));$('#monthSales').textContent=money(month);$('#monthTarget').textContent=money(target);$('#monthRemaining').textContent=money(Math.max(0,target-month));icons()}
-function renderCustomers(){let q=($('#customerSearch')?.value||'').trim().toLowerCase(),t=$('#filterType')?.value||'',s=$('#filterStatus')?.value||'';let rows=customers.filter(c=>(!q||[c.name,c.phone].some(v=>(v||'').toLowerCase().includes(q)))&&(!t||c.type===t)&&(!s||c.status===s));let total=rows.length;rows=rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);$('#customerRows').innerHTML=rows.length?rows.map(c=>'<tr><td class="font-bold">'+esc(c.name)+'</td><td>'+esc(c.type||'—')+'</td><td>'+esc(c.area||'—')+'</td><td>'+esc(c.phone||'—')+'</td><td><span class="pill">'+esc(c.status||'عميل جديد')+'</span></td><td><div class="flex gap-1"><button class="btn muted" data-view="'+c.id+'">عرض</button><button class="btn muted" data-edit="'+c.id+'">تعديل</button></div></td></tr>').join(''):'<tr><td colspan="6" class="text-center text-slate-400 py-10">لا توجد نتائج.</td></tr>';$('#customerCount').textContent=total+' عميل';$('#pageNumber').textContent=page;icons()}
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderTables(){renderCustomers();$('#visitRows').innerHTML=visits.map(v=>'<tr><td>'+esc(v.customer?.name||'—')+'</td><td>'+esc(v.visit_date||'')+' '+esc(v.visit_time||'')+'</td><td>'+esc(v.met_person||'—')+'</td><td>'+esc(v.result||'—')+'</td><td>'+money(v.quote_amount)+'</td><td>'+money(v.order_amount)+'</td></tr>').join('')||'<tr><td colspan="6" class="text-center text-slate-400 py-10">لا توجد زيارات.</td></tr>';$('#saleRows').innerHTML=sales.map(v=>'<tr><td>'+esc(v.customer?.name||'—')+'</td><td>'+esc(v.sale_date||'')+'</td><td>'+money(v.total_amount)+'</td><td>'+esc(v.status||'—')+'</td><td>'+esc(v.invoice_number||'—')+'</td></tr>').join('')||'<tr><td colspan="5" class="text-center text-slate-400 py-10">لا توجد مبيعات.</td></tr>';$('#followRows').innerHTML=followups.map(f=>'<tr><td>'+esc(f.customer?.name||'—')+'</td><td>'+esc(f.due_date||'')+'</td><td>'+esc(f.next_step||'—')+'</td><td>'+ (f.completed?'مكتملة':'مفتوحة')+'</td></tr>').join('')||'<tr><td colspan="4" class="text-center text-slate-400 py-10">لا توجد متابعات.</td></tr>';$('#recentCustomers').innerHTML=customers.slice(0,5).map(c=>'<div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700"><span>'+esc(c.name)+'</span><span class="pill">'+esc(c.status||'جديد')+'</span></div>').join('')||'لا توجد بيانات';$('#upcoming').innerHTML=followups.filter(f=>!f.completed).slice(0,5).map(f=>'<div class="py-2 border-b border-slate-100 dark:border-slate-700">'+esc(f.customer?.name||'عميل')+' · '+esc(f.due_date||'')+'</div>').join('')||'لا توجد متابعات قادمة';setStats()}
-function showModal(title,body,submit){$('#modalRoot').innerHTML='<div class="overlay" id="overlay"><div class="panel modal p-5"><div class="flex justify-between items-center mb-4"><h2 class="font-extrabold text-lg">'+title+'</h2><button id="closeModal" class="btn muted">✕</button></div>'+body+'</div></div>';$('#closeModal').onclick=closeModal;$('#overlay').onclick=e=>{if(e.target.id==='overlay')closeModal()};if(submit)$('#modalForm').onsubmit=async e=>{e.preventDefault();await submit(new FormData(e.target))};icons()}
-function closeModal(){$('#modalRoot').innerHTML=''}
-function formField(label,name,type='text',required=false,opts=null){let input=opts?'<select class="field" name="'+name+'">'+opts.map(o=>'<option>'+o+'</option>').join('')+'</select>':'<input class="field" name="'+name+'" type="'+type+'" '+(required?'required':'')+'>';return '<label class="text-sm block">'+label+input+'</label>'}
-function customerForm(c={}){let body='<form id="modalForm" class="grid sm:grid-cols-2 gap-3">'+formField('اسم المنشأة','name','text',true)+formField('نوع المنشأة','type','text',false,['معمل تحاليل طبية','عيادة','مركز طبي','مستشفى','مركز أشعة','منشأة طبية أخرى'])+formField('المنطقة','area')+formField('العنوان التفصيلي','address')+formField('رابط Google Maps','maps_url','url')+formField('هاتف المنشأة','phone','tel')+formField('اسم مسؤول المشتريات','contact_name')+formField('المسمى الوظيفي','contact_title')+formField('هاتف المسؤول','contact_phone','tel')+formField('واتساب','whatsapp','tel')+formField('أفضل وقت للتواصل','best_contact_time')+formField('تم التواصل؟','contacted','text',false,['لا','نعم'])+formField('المورد الحالي','current_supplier')+formField('متوسط المشتريات بالجنيه','average_purchase','number')+formField('معدل الشراء','purchase_frequency')+formField('موعد الشراء القادم','next_purchase_date','date')+formField('الميزانية التقريبية','budget','number')+formField('حالة العميل','status','text',false,['عميل جديد','تمت زيارته','تم التواصل مع مسؤول المشتريات','مهتم','بانتظار عرض سعر','في مرحلة التفاوض','عميل متعاقد','غير مهتم حاليًا'])+formField('أهمية العميل','importance','text',false,['متوسطة','مرتفعة','منخفضة'])+formField('الخطوة القادمة','next_step')+formField('تاريخ المتابعة','next_follow_up','date')+'<label class="text-sm sm:col-span-2">المنتجات والملاحظات<textarea name="notes" class="field mt-1" rows="3"></textarea></label><div class="sm:col-span-2 flex justify-end gap-2"><button type="button" id="cancelModal" class="btn muted">إلغاء</button><button class="btn primary">حفظ العميل</button></div></form>';showModal(c.id?'تعديل بيانات العميل':'إضافة عميل جديد',body,async f=>{let d=Object.fromEntries(f.entries());d.contacted=d.contacted==='نعم';d.average_purchase=Number(d.average_purchase||0);d.budget=Number(d.budget||0);d.next_purchase_date=d.next_purchase_date||null;d.next_follow_up=d.next_follow_up||null;d.updated_at=new Date().toISOString();let r=c.id?await sb.from('customers').update(d).eq('id',c.id):await sb.from('customers').insert(d);if(r.error)return toast(r.error.message);closeModal();toast('تم حفظ بيانات العميل');loadData()});$('#cancelModal').onclick=closeModal;if(c.id){Object.entries(c).forEach(([k,v])=>{let el=$('#modalForm [name="'+k+'"]');if(el&&v!=null)el.value=v})}}
-function visitForm(){let opts=customers.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');let body='<form id="modalForm" class="grid sm:grid-cols-2 gap-3">'+'<label class="text-sm">العميل<select name="customer_id" class="field">'+opts+'</select></label>'+formField('تاريخ الزيارة','visit_date','date',true)+formField('وقت الزيارة','visit_time','time')+formField('الشخص المقابل','met_person')+formField('نتيجة الزيارة','result','text',false,['تم التواصل','مهتم','طلب عرض سعر','لا يوجد مسؤول','غير مهتم'])+formField('قيمة عرض السعر','quote_amount','number')+formField('قيمة الطلب','order_amount','number')+formField('موعد الزيارة القادمة','next_visit_date','date')+'<label class="sm:col-span-2 text-sm">ملاحظات<textarea name="notes" class="field"></textarea></label><button class="btn primary sm:col-span-2">حفظ الزيارة</button></form>';showModal('تسجيل زيارة ميدانية',body,async f=>{let d=Object.fromEntries(f.entries());d.quote_amount=Number(d.quote_amount||0);d.order_amount=Number(d.order_amount||0);let r=await sb.from('visits').insert(d);if(r.error)return toast(r.error.message);closeModal();toast('تم تسجيل الزيارة');loadData()});$('#modalForm [name=visit_date]').value=new Date().toISOString().slice(0,10)}
-function saleForm(){let opts=customers.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');let body='<form id="modalForm" class="grid sm:grid-cols-2 gap-3"><label class="text-sm">العميل<select name="customer_id" class="field">'+opts+'</select></label>'+formField('تاريخ البيع','sale_date','date',true)+formField('قيمة البيع بالجنيه','total_amount','number',true)+formField('حالة الطلب','status','text',false,['completed','pending','cancelled'])+formField('رقم الفاتورة','invoice_number')+'<label class="sm:col-span-2 text-sm">ملاحظات<textarea name="notes" class="field"></textarea></label><button class="btn primary sm:col-span-2">حفظ عملية البيع</button></form>';showModal('تسجيل عملية بيع',body,async f=>{let d=Object.fromEntries(f.entries());d.total_amount=Number(d.total_amount);let r=await sb.from('sales').insert(d);if(r.error)return toast(r.error.message);closeModal();toast('تم تسجيل البيع');loadData()});$('#modalForm [name=sale_date]').value=new Date().toISOString().slice(0,10)}
-async function loadData(){if(!sb||!user)return;let [c,v,s,f]=await Promise.all([sb.from('customers').select('*').order('created_at',{ascending:false}),sb.from('visits').select('*,customer:customers(name)').order('visit_date',{ascending:false}),sb.from('sales').select('*,customer:customers(name)').order('sale_date',{ascending:false}),sb.from('follow_ups').select('*,customer:customers(name)').order('due_date')]);for(let x of [c,v,s,f])if(x.error){toast('تعذر تحميل بعض البيانات: '+x.error.message);return}customers=c.data||[];visits=v.data||[];sales=s.data||[];followups=f.data||[];renderTables();$('#connection').textContent='متصل بقاعدة البيانات';$('#connection').className='hidden sm:inline text-xs text-emerald-600'}
-async function connect(url,key){try{sb=window.supabase.createClient(url,key);let {data,error}=await sb.auth.getSession();if(error)throw error;user=data.session?.user||null;$('#authBtn').innerHTML=user?'<i data-lucide="log-out"></i>تسجيل الخروج':'<i data-lucide="log-in"></i>تسجيل الدخول';if(user)await loadData();else toast('تم الاتصال. سجّل الدخول للبدء.');icons()}catch(e){sb=null;toast('فشل الاتصال: '+e.message)}}
-$('#saveConfig').onclick=()=>{let u=$('#sbUrl').value.trim(),k=$('#sbKey').value.trim();if(!u||!k)return toast('أدخل رابط ومفتاح Supabase');localStorage.setItem('speedcrm_url',u);localStorage.setItem('speedcrm_key',k);connect(u,k)};
-$('#authBtn').onclick=async()=>{if(!sb)return navigate('settings');if(user){await sb.auth.signOut();user=null;customers=[];visits=[];sales=[];renderTables();$('#authBtn').textContent='تسجيل الدخول';return}let body='<form id="modalForm" class="space-y-3">'+formField('البريد الإلكتروني','email','email',true)+formField('كلمة المرور','password','password',true)+'<button class="btn primary w-full">دخول</button><p class="text-xs text-slate-400">إنشاء الحسابات يتم من لوحة Supabase Auth بواسطة المسؤول.</p></form>';showModal('تسجيل الدخول',body,async f=>{let d=Object.fromEntries(f.entries()),r=await sb.auth.signInWithPassword(d);if(r.error)return toast(r.error.message);user=r.data.user;closeModal();toast('تم تسجيل الدخول');loadData();$('#authBtn').textContent='تسجيل الخروج'})};
-$('#saveTarget').onclick=()=>{target=Math.max(1,Number($('#targetInput').value||40000));localStorage.setItem('speedcrm_target',target);setStats();toast('تم حفظ التارجت محليًا. اربطه بجدول monthly_targets لتعدد المستخدمين.')};
-$('#themeBtn').onclick=()=>{document.documentElement.classList.toggle('dark');localStorage.setItem('speedcrm_dark',document.documentElement.classList.contains('dark')?'1':'0')};
-$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('hidden');
-$('#nav').onclick=e=>{let b=e.target.closest('[data-page]');if(b)navigate(b.dataset.page)};
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+let sb = null, user = null, customers = [], visits = [], sales = [], followups = [];
+let page = 1, target = 40000;
+const PAGE_SIZE = 10;
+
+const days = [
+  ['السبت', 'الحي 11 و10 و12'],
+  ['الأحد', 'الحي الأول والثاني'],
+  ['الاثنين', 'الحي الثالث والرابع والخامس والمحور الخدمي'],
+  ['الثلاثاء', 'إجازة'],
+  ['الأربعاء', 'الحصري وزمزم مول والحي الثامن ومدخل الحي السابع'],
+  ['الخميس', 'متابعة العملاء والصفقات واستكمال الزيارات'],
+  ['الجمعة', 'إجازة']
+];
+
+const money = n => new Intl.NumberFormat('ar-EG', { maximumFractionDigits: 0 }).format(Number(n || 0)) + ' ج.م';
+
+function toast(s) {
+  const root = $('#toastRoot');
+  root.innerHTML = `<div class="toast"><i data-lucide="check-circle" class="w-4 h-4 text-brand-300"></i>${s}</div>`;
+  setTimeout(() => root.innerHTML = '', 3200);
+  icons();
+}
+
+function icons() { if (window.lucide) lucide.createIcons(); }
+
+function navigate(p) {
+  $$('.page').forEach(x => x.classList.add('hidden-view'));
+  $('#page-' + p)?.classList.remove('hidden-view');
+  $$('.nav-item').forEach(x => x.classList.toggle('active', x.dataset.page === p));
+  $('#sidebar').classList.add('hidden');
+  icons();
+}
+
+function renderSchedule() {
+  $('#scheduleGrid').innerHTML = days.map(([d, a], i) => `
+    <div class="panel p-5 group hover:border-brand-500/30 transition-all">
+      <div class="flex items-center justify-between">
+        <div class="font-bold text-base">${d}</div>
+        <div class="w-8 h-8 rounded-lg bg-brand-500/10 grid place-items-center text-brand-600 group-hover:bg-brand-500 group-hover:text-white transition-all">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+        </div>
+      </div>
+      <div class="text-sm text-slate-500 dark:text-slate-400 mt-3 leading-7">${a}</div>
+      <div class="text-xs text-brand-600 font-bold mt-4 flex items-center gap-1.5">
+        <i data-lucide="clock" class="w-3.5 h-3.5"></i>4:00 م – 9:00 م
+      </div>
+    </div>
+  `).join('');
+  icons();
+}
+
+function setStats() {
+  const m = new Date();
+  const month = sales.filter(x => {
+    let d = new Date(x.sale_date);
+    return d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear() && x.status !== 'cancelled';
+  }).reduce((a, x) => a + Number(x.total_amount || 0), 0);
+
+  const pct = Math.min(100, Math.round(month / target * 100));
+
+  const stats = [
+    { v: customers.length, l: 'إجمالي العملاء', i: 'users', c: 'brand' },
+    { v: visits.length, l: 'الزيارات المنفذة', i: 'map-pin', c: 'blue' },
+    { v: customers.filter(x => x.status === 'مهتم').length, l: 'عملاء مهتمون', i: 'heart', c: 'orange' },
+    { v: followups.filter(x => !x.completed).length, l: 'متابعات مفتوحة', i: 'calendar-clock', c: 'purple' }
+  ];
+
+  $('#stats').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="flex items-center justify-between">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-${s.c}-500/15 to-${s.c}-500/5 grid place-items-center">
+          <i data-lucide="${s.i}" class="w-5 h-5 text-${s.c}-500"></i>
+        </div>
+      </div>
+      <div class="stat-value mt-3">${s.v}</div>
+      <div class="text-xs text-slate-400 mt-1">${s.l}</div>
+    </div>
+  `).join('');
+
+  $('#salesTotal').textContent = money(month);
+  $('#targetLabel').textContent = 'من ' + money(target);
+  $('#targetPercent').textContent = pct + '%';
+  $('#targetBar').style.width = pct + '%';
+  $('#remaining').textContent = 'المتبقي: ' + money(Math.max(0, target - month));
+  $('#monthSales').textContent = money(month);
+  $('#monthTarget').textContent = money(target);
+  $('#monthRemaining').textContent = money(Math.max(0, target - month));
+  icons();
+}
+
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function statusPill(status) {
+  if (!status) return '<span class="pill pill-gray">جديد</span>';
+  if (status.includes('مهتم') || status.includes('متعاقد')) return `<span class="pill pill-green">${esc(status)}</span>`;
+  if (status.includes('عرض') || status.includes('تفاوض')) return `<span class="pill pill-orange">${esc(status)}</span>`;
+  return `<span class="pill pill-teal">${esc(status)}</span>`;
+}
+
+function renderCustomers() {
+  let q = ($('#customerSearch')?.value || '').trim().toLowerCase();
+  let t = $('#filterType')?.value || '';
+  let s = $('#filterStatus')?.value || '';
+
+  let rows = customers.filter(c =>
+    (!q || [c.name, c.phone].some(v => (v || '').toLowerCase().includes(q))) &&
+    (!t || c.type === t) && (!s || c.status === s)
+  );
+  let total = rows.length;
+  rows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  $('#customerRows').innerHTML = rows.length ? rows.map(c => `
+    <tr>
+      <td class="font-bold">${esc(c.name)}</td>
+      <td>${esc(c.type || '—')}</td>
+      <td>${esc(c.area || '—')}</td>
+      <td>${esc(c.phone || '—')}</td>
+      <td>${statusPill(c.status)}</td>
+      <td>
+        <div class="flex gap-1.5">
+          <button class="btn btn-muted text-xs py-1.5 px-3" data-view="${c.id}">عرض</button>
+          <button class="btn btn-muted text-xs py-1.5 px-3" data-edit="${c.id}">تعديل</button>
+        </div>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" class="text-center text-slate-400 py-10">لا توجد نتائج مطابقة.</td></tr>';
+
+  $('#customerCount').textContent = total + ' عميل';
+  $('#pageNumber').textContent = page;
+  icons();
+}
+
+function renderTables() {
+  renderCustomers();
+
+  $('#visitRows').innerHTML = visits.map(v => `
+    <tr>
+      <td>${esc(v.customer?.name || '—')}</td>
+      <td>${esc(v.visit_date || '')} <span class="text-slate-400 text-xs">${esc(v.visit_time || '')}</span></td>
+      <td>${esc(v.met_person || '—')}</td>
+      <td>${esc(v.result || '—')}</td>
+      <td>${money(v.quote_amount)}</td>
+      <td>${money(v.order_amount)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" class="text-center text-slate-400 py-10">لا توجد زيارات.</td></tr>';
+
+  $('#saleRows').innerHTML = sales.map(v => `
+    <tr>
+      <td>${esc(v.customer?.name || '—')}</td>
+      <td>${esc(v.sale_date || '')}</td>
+      <td class="font-bold">${money(v.total_amount)}</td>
+      <td>${statusPill(v.status)}</td>
+      <td>${esc(v.invoice_number || '—')}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" class="text-center text-slate-400 py-10">لا توجد مبيعات.</td></tr>';
+
+  $('#followRows').innerHTML = followups.map(f => `
+    <tr>
+      <td>${esc(f.customer?.name || '—')}</td>
+      <td>${esc(f.due_date || '')}</td>
+      <td>${esc(f.next_step || '—')}</td>
+      <td>${f.completed ? '<span class="pill pill-green">مكتملة</span>' : '<span class="pill pill-orange">مفتوحة</span>'}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="text-center text-slate-400 py-10">لا توجد متابعات.</td></tr>';
+
+  $('#recentCustomers').innerHTML = customers.slice(0, 5).map(c => `
+    <div class="flex justify-between items-center py-3 border-b border-slate-100/60 dark:border-slate-700/40 last:border-0">
+      <span class="font-semibold text-sm">${esc(c.name)}</span>
+      ${statusPill(c.status || 'جديد')}
+    </div>
+  `).join('') || '<div class="text-center py-6">لا توجد بيانات</div>';
+
+  $('#upcoming').innerHTML = followups.filter(f => !f.completed).slice(0, 5).map(f => `
+    <div class="py-3 border-b border-slate-100/60 dark:border-slate-700/40 last:border-0 flex justify-between">
+      <span class="text-sm">${esc(f.customer?.name || 'عميل')}</span>
+      <span class="text-xs text-slate-400">${esc(f.due_date || '')}</span>
+    </div>
+  `).join('') || '<div class="text-center py-6">لا توجد متابعات قادمة</div>';
+
+  setStats();
+}
+
+function showModal(title, body, submit) {
+  $('#modalRoot').innerHTML = `
+    <div class="overlay" id="overlay">
+      <div class="panel modal p-6">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="font-extrabold text-lg">${title}</h2>
+          <button id="closeModal" class="btn btn-muted p-2 rounded-lg" aria-label="إغلاق">✕</button>
+        </div>
+        ${body}
+      </div>
+    </div>
+  `;
+  $('#closeModal').onclick = closeModal;
+  $('#overlay').onclick = e => { if (e.target.id === 'overlay') closeModal(); };
+  if (submit) $('#modalForm').onsubmit = async e => { e.preventDefault(); await submit(new FormData(e.target)); };
+  icons();
+}
+
+function closeModal() { $('#modalRoot').innerHTML = ''; }
+
+function formField(label, name, type = 'text', required = false, opts = null) {
+  let input = opts
+    ? `<select class="field" name="${name}">${opts.map(o => `<option>${o}</option>`).join('')}</select>`
+    : `<input class="field" name="${name}" type="${type}" ${required ? 'required' : ''}>`;
+  return `<label class="text-sm block">${label}${input}</label>`;
+}
+
+function customerForm(c = {}) {
+  let body = `
+    <form id="modalForm" class="grid sm:grid-cols-2 gap-3">
+      ${formField('اسم المنشأة', 'name', 'text', true)}
+      ${formField('نوع المنشأة', 'type', 'text', false, ['معمل تحاليل طبية', 'عيادة', 'مركز طبي', 'مستشفى', 'مركز أشعة', 'منشأة طبية أخرى'])}
+      ${formField('المنطقة', 'area')}
+      ${formField('العنوان التفصيلي', 'address')}
+      ${formField('رابط Google Maps', 'maps_url', 'url')}
+      ${formField('هاتف المنشأة', 'phone', 'tel')}
+      ${formField('اسم مسؤول المشتريات', 'contact_name')}
+      ${formField('المسمى الوظيفي', 'contact_title')}
+      ${formField('هاتف المسؤول', 'contact_phone', 'tel')}
+      ${formField('واتساب', 'whatsapp', 'tel')}
+      ${formField('أفضل وقت للتواصل', 'best_contact_time')}
+      ${formField('تم التواصل؟', 'contacted', 'text', false, ['لا', 'نعم'])}
+      ${formField('المورد الحالي', 'current_supplier')}
+      ${formField('متوسط المشتريات بالجنيه', 'average_purchase', 'number')}
+      ${formField('معدل الشراء', 'purchase_frequency')}
+      ${formField('موعد الشراء القادم', 'next_purchase_date', 'date')}
+      ${formField('الميزانية التقريبية', 'budget', 'number')}
+      ${formField('حالة العميل', 'status', 'text', false, ['عميل جديد', 'تمت زيارته', 'تم التواصل مع مسؤول المشتريات', 'مهتم', 'بانتظار عرض سعر', 'في مرحلة التفاوض', 'عميل متعاقد', 'غير مهتم حاليًا'])}
+      ${formField('أهمية العميل', 'importance', 'text', false, ['متوسطة', 'مرتفعة', 'منخفضة'])}
+      ${formField('الخطوة القادمة', 'next_step')}
+      ${formField('تاريخ المتابعة', 'next_follow_up', 'date')}
+      <label class="text-sm sm:col-span-2">المنتجات والملاحظات
+        <textarea name="notes" class="field mt-1" rows="3"></textarea>
+      </label>
+      <div class="sm:col-span-2 flex justify-end gap-2 mt-2">
+        <button type="button" id="cancelModal" class="btn btn-muted">إلغاء</button>
+        <button class="btn btn-primary">حفظ العميل</button>
+      </div>
+    </form>
+  `;
+
+  showModal(c.id ? 'تعديل بيانات العميل' : 'إضافة عميل جديد', body, async f => {
+    let d = Object.fromEntries(f.entries());
+    d.contacted = d.contacted === 'نعم';
+    d.average_purchase = Number(d.average_purchase || 0);
+    d.budget = Number(d.budget || 0);
+    d.next_purchase_date = d.next_purchase_date || null;
+    d.next_follow_up = d.next_follow_up || null;
+    d.updated_at = new Date().toISOString();
+
+    let r = c.id
+      ? await sb.from('customers').update(d).eq('id', c.id)
+      : await sb.from('customers').insert(d);
+
+    if (r.error) return toast(r.error.message);
+    closeModal(); toast('تم حفظ بيانات العميل بنجاح'); loadData();
+  });
+
+  $('#cancelModal').onclick = closeModal;
+  if (c.id) {
+    Object.entries(c).forEach(([k, v]) => {
+      let el = $('#modalForm [name="' + k + '"]');
+      if (el && v != null) el.value = v;
+    });
+  }
+}
+
+function visitForm() {
+  let opts = customers.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  let body = `
+    <form id="modalForm" class="grid sm:grid-cols-2 gap-3">
+      <label class="text-sm sm:col-span-2">العميل
+        <select name="customer_id" class="field">${opts}</select>
+      </label>
+      ${formField('تاريخ الزيارة', 'visit_date', 'date', true)}
+      ${formField('وقت الزيارة', 'visit_time', 'time')}
+      ${formField('الشخص المقابل', 'met_person')}
+      ${formField('نتيجة الزيارة', 'result', 'text', false, ['تم التواصل', 'مهتم', 'طلب عرض سعر', 'لا يوجد مسؤول', 'غير مهتم'])}
+      ${formField('قيمة عرض السعر', 'quote_amount', 'number')}
+      ${formField('قيمة الطلب', 'order_amount', 'number')}
+      ${formField('موعد الزيارة القادمة', 'next_visit_date', 'date')}
+      <label class="sm:col-span-2 text-sm">ملاحظات
+        <textarea name="notes" class="field mt-1"></textarea>
+      </label>
+      <button class="btn btn-primary sm:col-span-2 mt-2">حفظ الزيارة</button>
+    </form>
+  `;
+  showModal('تسجيل زيارة ميدانية', body, async f => {
+    let d = Object.fromEntries(f.entries());
+    d.quote_amount = Number(d.quote_amount || 0);
+    d.order_amount = Number(d.order_amount || 0);
+    let r = await sb.from('visits').insert(d);
+    if (r.error) return toast(r.error.message);
+    closeModal(); toast('تم تسجيل الزيارة'); loadData();
+  });
+  $('#modalForm [name=visit_date]').value = new Date().toISOString().slice(0, 10);
+}
+
+function saleForm() {
+  let opts = customers.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  let body = `
+    <form id="modalForm" class="grid sm:grid-cols-2 gap-3">
+      <label class="text-sm sm:col-span-2">العميل
+        <select name="customer_id" class="field">${opts}</select>
+      </label>
+      ${formField('تاريخ البيع', 'sale_date', 'date', true)}
+      ${formField('قيمة البيع بالجنيه', 'total_amount', 'number', true)}
+      ${formField('حالة الطلب', 'status', 'text', false, ['completed', 'pending', 'cancelled'])}
+      ${formField('رقم الفاتورة', 'invoice_number')}
+      <label class="sm:col-span-2 text-sm">ملاحظات
+        <textarea name="notes" class="field mt-1"></textarea>
+      </label>
+      <button class="btn btn-primary sm:col-span-2 mt-2">حفظ عملية البيع</button>
+    </form>
+  `;
+  showModal('تسجيل عملية بيع', body, async f => {
+    let d = Object.fromEntries(f.entries());
+    d.total_amount = Number(d.total_amount);
+    let r = await sb.from('sales').insert(d);
+    if (r.error) return toast(r.error.message);
+    closeModal(); toast('تم تسجيل البيع'); loadData();
+  });
+  $('#modalForm [name=sale_date]').value = new Date().toISOString().slice(0, 10);
+}
+
+async function loadData() {
+  if (!sb || !user) return;
+
+  let [c, v, s, f] = await Promise.all([
+    sb.from('customers').select('*').order('created_at', { ascending: false }),
+    sb.from('visits').select('*,customer:customers(name)').order('visit_date', { ascending: false }),
+    sb.from('sales').select('*,customer:customers(name)').order('sale_date', { ascending: false }),
+    sb.from('follow_ups').select('*,customer:customers(name)').order('due_date')
+  ]);
+
+  for (let x of [c, v, s, f]) if (x.error) { toast('تعذر تحميل بعض البيانات: ' + x.error.message); return; }
+
+  customers = c.data || [];
+  visits = v.data || [];
+  sales = s.data || [];
+  followups = f.data || [];
+
+  renderTables();
+  $('#connection').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> متصل';
+  $('#connection').className = 'hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full font-semibold';
+}
+
+async function connect(url, key) {
+  try {
+    sb = window.supabase.createClient(url, key);
+    let { data, error } = await sb.auth.getSession();
+    if (error) throw error;
+    user = data.session?.user || null;
+
+    $('#authBtn').innerHTML = user
+      ? '<i data-lucide="log-out" class="w-4 h-4"></i>تسجيل الخروج'
+      : '<i data-lucide="log-in" class="w-4 h-4"></i>تسجيل الدخول';
+
+    if (user) await loadData();
+    else toast('تم الاتصال. سجّل الدخول للبدء.');
+    icons();
+  } catch (e) {
+    sb = null;
+    toast('فشل الاتصال: ' + e.message);
+  }
+}
+
+// ===== Events =====
+$('#saveConfig').onclick = () => {
+  let u = $('#sbUrl').value.trim(), k = $('#sbKey').value.trim();
+  if (!u || !k) return toast('أدخل رابط ومفتاح Supabase');
+  localStorage.setItem('speedcrm_url', u);
+  localStorage.setItem('speedcrm_key', k);
+  connect(u, k);
+};
+
+$('#authBtn').onclick = async () => {
+  if (!sb) return navigate('settings');
+  if (user) {
+    await sb.auth.signOut();
+    user = null; customers = []; visits = []; sales = []; followups = [];
+    renderTables();
+    $('#authBtn').innerHTML = '<i data-lucide="log-in" class="w-4 h-4"></i>تسجيل الدخول';
+    icons();
+    return;
+  }
+
+  let body = `
+    <form id="modalForm" class="space-y-3">
+      ${formField('البريد الإلكتروني', 'email', 'email', true)}
+      ${formField('كلمة المرور', 'password', 'password', true)}
+      <button class="btn btn-primary w-full mt-2">دخول</button>
+      <p class="text-xs text-slate-400 text-center">إنشاء الحسابات يتم من لوحة Supabase Auth بواسطة المسؤول.</p>
+    </form>
+  `;
+
+  showModal('تسجيل الدخول', body, async f => {
+    let d = Object.fromEntries(f.entries());
+    let r = await sb.auth.signInWithPassword(d);
+    if (r.error) return toast(r.error.message);
+    user = r.data.user;
+    closeModal(); toast('تم تسجيل الدخول بنجاح');
+    loadData();
+    $('#authBtn').innerHTML = '<i data-lucide="log-out" class="w-4 h-4"></i>تسجيل الخروج';
+    icons();
+  });
+};
+
+$('#saveTarget').onclick = () => {
+  target = Math.max(1, Number($('#targetInput').value || 40000));
+  localStorage.setItem('speedcrm_target', target);
+  setStats();
+  toast('تم حفظ التارجت محليًا.');
+};
+
+$('#themeBtn').onclick = () => {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('speedcrm_dark', document.documentElement.classList.contains('dark') ? '1' : '0');
+  // Re-render icons for theme-aware colors (if any)
+  icons();
+};
+
+$('#mobileMenu').onclick = () => $('#sidebar').classList.toggle('hidden');
+
+$('#sidebarToggle').onclick = () => {
+  const sidebar = $('#sidebar');
+  sidebar.classList.toggle('w-64');
+  sidebar.classList.toggle('w-20');
+  sidebar.classList.toggle('sidebar-collapsed');
+};
+
+$('#nav').onclick = e => {
+  let b = e.target.closest('[data-page]');
+  if (b) navigate(b.dataset.page);
+};
+
 document.addEventListener('click', e => {
   const p = e.target.closest('[data-page]');
-  if (p) navigate(p.dataset.page);
+  if (p && !e.target.closest('#nav')) navigate(p.dataset.page);
 
   const a = e.target.closest('[data-action]');
   if (a) {
@@ -90,17 +1327,108 @@ document.addEventListener('click', e => {
   if (vw) {
     const c = customers.find(x => x.id === vw.dataset.view);
     if (c) {
-      const details = '<div class="space-y-2 text-sm">' +
-        Object.entries(c)
-          .filter(([k, v]) => v && ['name','type','area','address','phone','contact_name','contact_phone','whatsapp','current_supplier','status','importance','next_step','next_follow_up','notes'].includes(k))
-          .map(([k, v]) => '<div class="flex justify-between border-b py-2"><b>' + k + '</b><span>' + esc(v) + '</span></div>')
-          .join('') +
-        '</div>';
+      const labels = {
+        name: 'اسم المنشأة', type: 'النوع', area: 'المنطقة', address: 'العنوان',
+        phone: 'الهاتف', contact_name: 'مسؤول المشتريات', contact_phone: 'هاتف المسؤول',
+        whatsapp: 'واتساب', current_supplier: 'المورد الحالي', status: 'الحالة',
+        importance: 'الأهمية', next_step: 'الخطوة القادمة', next_follow_up: 'تاريخ المتابعة', notes: 'ملاحظات'
+      };
+      const details = `<div class="space-y-1 text-sm">` +
+        Object.entries(c).filter(([k, v]) => v && labels[k]).map(([k, v]) =>
+          `<div class="flex justify-between border-b border-slate-100/60 dark:border-slate-700/40 py-2.5">
+            <b class="text-slate-500">${labels[k]}</b>
+            <span>${esc(v)}</span>
+          </div>`
+        ).join('') + `</div>`;
       showModal('تفاصيل العميل', details);
     }
   }
 });
-  ['customerSearch','filterType','filterStatus'].forEach(id=>$('#'+id).addEventListener('input',()=>{page=1;renderCustomers()}));$('#prevPage').onclick=()=>{page=Math.max(1,page-1);renderCustomers()};$('#nextPage').onclick=()=>{page++;renderCustomers()};
-$('#createShare').onclick=async()=>{if(!sb||!user)return toast('سجّل الدخول أولاً');const type=$('#shareType').value,area=$('#shareArea').value.trim(),expiry=$('#shareExpiry').value;const {data,error}=await sb.functions.invoke('share-report',{body:{action:'create',data_type:type,filters:area?{area}:{},expires_at:expiry?new Date(expiry+'T23:59:59').toISOString():null,require_auth:$('#shareAuth').value==='true'}});if(error||!data?.token)return toast(error?.message||data?.error||'تعذر إنشاء الرابط');const link=location.origin+location.pathname+'?share='+encodeURIComponent(data.token);$('#shareResult').innerHTML='<div class="break-all p-3 rounded-lg bg-slate-100 dark:bg-slate-800">'+esc(link)+'</div><div class="flex gap-2 mt-2"><button id="copyShare" class="btn muted">نسخ الرابط</button><a class="btn primary" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent('تقرير Speed Medical CRM: '+link)+'">إرسال عبر واتساب</a></div>';$('#copyShare').onclick=()=>navigator.clipboard.writeText(link).then(()=>toast('تم نسخ الرابط')).catch(()=>toast('تعذر النسخ'));}
-const shareToken=new URLSearchParams(location.search).get('share');if(shareToken){document.querySelector('main').innerHTML='<section class="panel p-6"><h1 class="text-xl font-extrabold mb-2">تقرير Speed Medical المشترك</h1><div id="sharedContent" class="text-sm text-slate-400">جارٍ التحقق من صلاحية الرابط...</div></section>';const savedUrl=localStorage.getItem('speedcrm_url')||window.SPEEDCRM_CONFIG?.supabaseUrl,savedKey=localStorage.getItem('speedcrm_key')||window.SPEEDCRM_CONFIG?.supabaseAnonKey;if(savedUrl&&savedKey){const client=window.supabase.createClient(savedUrl,savedKey);client.functions.invoke('share-report',{body:{action:'view',token:shareToken}}).then(({data,error})=>{const el=$('#sharedContent');if(error||!data?.data){el.textContent='الرابط غير صالح أو منتهي أو يتطلب تسجيل الدخول.';return}const rows=data.data;el.innerHTML='<p class="mb-3">عرض للقراءة فقط · '+rows.length+' سجل</p><div class="overflow-auto"><table class="w-full text-right"><thead><tr>'+data.fields.map(x=>'<th class="p-2">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+data.fields.map(x=>'<td class="p-2 border-t">'+esc(row[x]??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'})}else $('#sharedContent').textContent='يجب إعداد اتصال قاعدة البيانات على هذا الجهاز لعرض التقرير.'}const url=localStorage.getItem('speedcrm_url')||window.SPEEDCRM_CONFIG?.supabaseUrl,key=localStorage.getItem('speedcrm_key')||window.SPEEDCRM_CONFIG?.supabaseAnonKey;target=Number(localStorage.getItem('speedcrm_target')||40000);$('#targetInput').value=target;if(localStorage.getItem('speedcrm_dark')==='1')document.documentElement.classList.add('dark');renderSchedule();setStats();if(url&&key){$('#sbUrl').value=url;$('#sbKey').value=key;connect(url,key)}icons();
-</script></body></html>
+
+['customerSearch', 'filterType', 'filterStatus'].forEach(id => {
+  $('#' + id).addEventListener('input', () => { page = 1; renderCustomers(); });
+});
+
+$('#prevPage').onclick = () => { page = Math.max(1, page - 1); renderCustomers(); };
+$('#nextPage').onclick = () => { page++; renderCustomers(); };
+
+$('#createShare').onclick = async () => {
+  if (!sb || !user) return toast('سجّل الدخول أولاً');
+  const type = $('#shareType').value;
+  const area = $('#shareArea').value.trim();
+  const expiry = $('#shareExpiry').value;
+  const { data, error } = await sb.functions.invoke('share-report', {
+    body: {
+      action: 'create',
+      data_type: type,
+      filters: area ? { area } : {},
+      expires_at: expiry ? new Date(expiry + 'T23:59:59').toISOString() : null,
+      require_auth: $('#shareAuth').value === 'true'
+    }
+  });
+  if (error || !data?.token) return toast(error?.message || data?.error || 'تعذر إنشاء الرابط');
+  const link = location.origin + location.pathname + '?share=' + encodeURIComponent(data.token);
+  $('#shareResult').innerHTML = `
+    <div class="break-all p-3 rounded-xl bg-slate-100/70 dark:bg-slate-800/70 text-xs font-mono">${esc(link)}</div>
+    <div class="flex gap-2 mt-2">
+      <button id="copyShare" class="btn btn-muted text-xs">نسخ الرابط</button>
+      <a class="btn btn-primary text-xs" target="_blank" rel="noopener"
+         href="https://wa.me/?text=${encodeURIComponent('تقرير Speed Medical CRM: ' + link)}">
+        إرسال عبر واتساب
+      </a>
+    </div>`;
+  $('#copyShare').onclick = () =>
+    navigator.clipboard.writeText(link).then(() => toast('تم نسخ الرابط')).catch(() => toast('تعذر النسخ'));
+};
+
+// ===== Shared report page =====
+const shareToken = new URLSearchParams(location.search).get('share');
+if (shareToken) {
+  document.querySelector('main').innerHTML = `
+    <section class="panel p-8">
+      <h1 class="text-xl font-extrabold mb-2">تقرير Speed Medical المشترك</h1>
+      <div id="sharedContent" class="text-sm text-slate-400 py-8 text-center">جارٍ التحقق من صلاحية الرابط...</div>
+    </section>`;
+  const savedUrl = localStorage.getItem('speedcrm_url') || window.SPEEDCRM_CONFIG?.supabaseUrl;
+  const savedKey = localStorage.getItem('speedcrm_key') || window.SPEEDCRM_CONFIG?.supabaseAnonKey;
+  if (savedUrl && savedKey) {
+    const client = window.supabase.createClient(savedUrl, savedKey);
+    client.functions.invoke('share-report', { body: { action: 'view', token: shareToken } })
+      .then(({ data, error }) => {
+        const el = $('#sharedContent');
+        if (error || !data?.data) {
+          el.textContent = 'الرابط غير صالح أو منتهي أو يتطلب تسجيل الدخول.';
+          return;
+        }
+        const rows = data.data;
+        el.innerHTML = `
+          <p class="mb-3 font-semibold text-slate-600 dark:text-slate-300">عرض للقراءة فقط · ${rows.length} سجل</p>
+          <div class="overflow-auto">
+            <table class="w-full text-right">
+              <thead><tr>${data.fields.map(x => `<th>${esc(x)}</th>`).join('')}</tr></thead>
+              <tbody>${rows.map(row => `<tr>${data.fields.map(x => `<td>${esc(row[x] ?? '—')}</td>`).join('')}</tr>`).join('')}</tbody>
+            </table>
+          </div>`;
+      });
+  } else {
+    $('#sharedContent').textContent = 'يجب إعداد اتصال قاعدة البيانات على هذا الجهاز لعرض التقرير.';
+  }
+}
+
+// ===== Init =====
+const url = localStorage.getItem('speedcrm_url') || window.SPEEDCRM_CONFIG?.supabaseUrl;
+const key = localStorage.getItem('speedcrm_key') || window.SPEEDCRM_CONFIG?.supabaseAnonKey;
+target = Number(localStorage.getItem('speedcrm_target') || 40000);
+$('#targetInput').value = target;
+if (localStorage.getItem('speedcrm_dark') === '1') document.documentElement.classList.add('dark');
+renderSchedule();
+setStats();
+if (url && key) {
+  $('#sbUrl').value = url;
+  $('#sbKey').value = key;
+  connect(url, key);
+}
+icons();
+</script>
+</body>
+</html>
